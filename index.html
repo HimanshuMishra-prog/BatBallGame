@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <h1 id="heading">Bat Ball Stump Game</h1>
+    <div class="game_container">
+        <div class="image_container">
+            <button class="clickable" onclick="
+                let computerChoice = computeChoices();
+                let result = computeResults(`Bat` , computerChoice);
+                finalMsg(`Bat` , computerChoice , result);
+            "><img src="images/bat.png" class="icon"></button>
+            <button class="clickable" onclick="
+                computerChoice = computeChoices();
+                result = computeResults(`Ball` , computerChoice);
+                finalMsg(`Ball` , computerChoice , result);
+            "><img src="images/ball.png" class="icon"></button>
+            <button class="clickable" onclick="
+                computerChoice = computeChoices();
+                result = computeResults(`Stumps` , computerChoice);
+                finalMsg(`Stumps` , computerChoice , result);
+            "><img src="images/stump.png" class="icon"></button>
+        </div>
+        <button id="resetButton" onclick="localStorage.clear();
+            resetScore();
+            ">
+            New Game
+        </button>
+    </div>
+
+    <div class="character-container">
+        <img id="gameCharacter" src="images/koala.png" alt="Character Reaction" />
+    </div>
+
+    <div class="output">
+        <h4 class="choiceMsg"></h4>
+        <h4 class="resultMsg"></h4>
+    </div>
+
+    <div class="scorecard">
+        <span>🏆 Wins: <span id="wins">0</span></span>
+        <span>😢 Losses: <span id="losses">0</span></span>
+        <span>⚖️ Ties: <span id="ties">0</span></span>
+    </div>
+
+    <script>
+        let score;
+        let scoreStr = localStorage.getItem('score');
+        score = scoreStr ? JSON.parse(scoreStr) : {
+            wins: 0,
+            loss: 0,
+            ties: 0,
+        };
+
+        window.onload = function () {
+            resetScore();
+        };
+        /*initially call reset score in starting to keep everthing in place*/
+
+        function resetScore() {
+            score.wins = 0;
+            score.loss = 0;
+            score.ties = 0;
+            finalMsg();
+        }
+
+        score.displayScore = function () {
+            return `Your score is wins : ${score['wins']} losses : ${score['loss']} and ties ${score['ties']}`
+        };
+
+        function computeChoices() {
+            let choice = Math.random() * 3;
+            let computerChoiceMsg;
+            if (choice > 0 && choice <= 1) return `Bat`;
+            else if (choice > 1 && choice <= 2) return `Ball`;
+            else return `Stumps`;
+        }
+
+        function computeResults(user, computer) {
+            if (user === computer) {
+                score.ties++;
+                return `🤝 It's a tie!`;
+            }
+            if (
+                (user === 'Bat' && computer === 'Ball') ||
+                (user === 'Ball' && computer === 'Stumps') ||
+                (user === 'Stumps' && computer === 'Bat')
+            ) {
+                score.wins++;
+                return `🎉 You win!`;
+            } else {
+                score.loss++;
+                return `💀 You lose!`;
+            }
+        }
+
+        function finalMsg(userChoice = '', computerChoice = '', result = '') {
+            document.querySelector('.choiceMsg').innerHTML = userChoice ? `Your choice is ${userChoice}. Computers choice is ${computerChoice}.` : '';
+            document.querySelector('.resultMsg').innerHTML = result ? result : '';
+            updateScoreUI();
+            localStorage.setItem('score', JSON.stringify(score));
+            const character = document.getElementById('gameCharacter'); // ✅ add this line
+            character.style.animation = 'none'; // Reset animation
+
+            // Trigger reflow to restart animation
+            character.offsetHeight; // ✅ this forces reflow
+
+            if (result.includes("win")) {
+                character.src = "images/boy.png";
+                character.style.animation = "celebrate 1s ease-in-out";
+            } else if (result.includes("lose")) {
+                character.src = "images/sad.png";
+                character.style.animation = "cry 0.6s ease-in-out";
+            } else {
+                character.src = "images/birthday-boy.png";
+            }
+        }
+
+        function updateScoreUI() {
+            document.getElementById('wins').textContent = score.wins;
+            document.getElementById('losses').textContent = score.loss;
+            document.getElementById('ties').textContent = score.ties;
+        }
+
+    </script>
+</body>
+
+</html>
